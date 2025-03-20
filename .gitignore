@@ -1,0 +1,90 @@
+# ------------------------------
+# 🔹 Python & Virtual Environment
+# ------------------------------
+venv/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# ------------------------------
+# 🔹 Logs & Temp Files
+# ------------------------------
+logs/
+*.log
+debug.log
+*.out
+*.tmp
+.DS_Store
+Thumbs.db
+
+# ------------------------------
+# 🔹 IDE / Editor Config Files
+# ------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------------
+# 🔹 Python Dependency Management
+# ------------------------------
+pip-log.txt
+pip-delete-this-directory.txt
+poetry.lock
+Pipfile
+Pipfile.lock
+
+# ------------------------------
+# 🔹 Database Files
+# ------------------------------
+*.sqlite3
+*.db
+*.db-journal
+
+# ------------------------------
+# 🔹 Docker
+# ------------------------------
+docker-compose.override.yml
+.dockerignore
+
+# ------------------------------
+# 🔹 Alembic Migrations
+# ------------------------------
+migrations/
+alembic/versions/
+
+# ------------------------------
+# 🔹 Jupyter Notebooks
+# ------------------------------
+.ipynb_checkpoints/
+
+# ------------------------------
+# 🔹 Frontend (Node.js)
+# ------------------------------
+node_modules/
+dist/
+.next/
+out/
+build/
+
+# ------------------------------
+# 🔹 Testing & Coverage
+# ------------------------------
+htmlcov/
+.coverage
+.tox/
+.nosetests.xml
+coverage.xml
+pytest_cache/
+*.cover
+.cache
+__snapshots__/
+
+# ------------------------------
+# 🔹 OS-Specific Files
+# ------------------------------
+*.swp
+*.swo
+*.bak
+*.orig
