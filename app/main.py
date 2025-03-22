@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import engine, Base
 from app.models import user
-from app.routers import auth, user
+from app.routers import auth, user, teetime
 
 app = FastAPI()
 
@@ -25,3 +25,4 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(user.router, prefix="/api", tags=["user"])
 app.include_router(auth.router, prefix="/api", tags=["auth"])
+app.include_router(teetime.router, prefix="/api", tags=["teetime"])
