@@ -2,27 +2,26 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 from app.models.user import Role
 from typing import List
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str
+    firstname: str
+    lastname: str
+    address: str
     phone: str
     email: str
+
+class UserCreate(UserBase):
     hashed_password: str
 
-class UserUpdate(BaseModel):
+class UserUpdate(UserBase):
     id: int
-    username: str
-    phone: str
-    email: EmailStr
     role: Role
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserResponse(BaseModel):
+class UserResponse(UserBase):
     id: int
-    username: str
-    phone: str
-    email: str
     role: Role
 
     model_config = ConfigDict(from_attributes=True)

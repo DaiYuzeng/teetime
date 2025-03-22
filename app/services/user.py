@@ -51,6 +51,9 @@ def update_user(user_update: UserUpdate, db: Session):
 	if not existing_user:
 			raise HTTPException(status_code=404, detail="User not found")
 
+	existing_user.firstname = user_update.firstname
+	existing_user.lastname = user_update.lastname
+	existing_user.address = user_update.address
 	existing_user.phone = user_update.phone
 	existing_user.email = user_update.email
 	existing_user.role = Role(user_update.role)
