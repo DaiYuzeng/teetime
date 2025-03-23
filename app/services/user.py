@@ -10,22 +10,22 @@ def get_users(db: Session, limit: int, offset: int):
 	total_count = db.query(func.count(User.id)).scalar()
 	users = query.offset(offset).limit(limit).all()
 	return {
-			"total": total_count,
-			"limit": limit,
-			"offset": offset,
-			"data": users,
+		"total": total_count,
+		"limit": limit,
+		"offset": offset,
+		"data": users,
 	}
 
 def get_user_by_id(user_id: int, db: Session):
 	user = db.query(User).filter(User.id == user_id).first()
 	if not user:
-			raise HTTPException(status_code=404, detail="User not found")
+		raise HTTPException(status_code=404, detail="User not found")
 	return user
 
 def delete_user(user_id: int, db: Session):
 	user = db.query(User).filter(User.id == user_id).first()
 	if not user:
-			raise HTTPException(status_code=404, detail="User not found")
+		raise HTTPException(status_code=404, detail="User not found")
 	db.delete(user)
 	db.commit()
 	return {"message": "User deleted successfully"}
@@ -33,13 +33,16 @@ def delete_user(user_id: int, db: Session):
 def register_user(user: UserCreate, db: Session):
 	existing_user = db.query(User).filter(User.username == user.username).first()
 	if existing_user:
-			raise HTTPException(status_code=400, detail="Username already exists")
+		raise HTTPException(status_code=400, detail="Username already exists")
 
 	new_user = User(
-			username=user.username,
-			phone=user.phone,
-			email=user.email,
-			hashed_password=user.hashed_password
+		firstname = user.firstname,
+		lastname = user.lastname,
+		address = user.address,
+		username=user.username,
+		phone=user.phone,
+		email=user.email,
+		hashed_password=user.hashed_password
 	)
 	db.add(new_user)
 	db.commit()
@@ -49,7 +52,7 @@ def register_user(user: UserCreate, db: Session):
 def update_user(user_update: UserUpdate, db: Session):
 	existing_user = db.query(User).filter(User.id == user_update.id).first()
 	if not existing_user:
-			raise HTTPException(status_code=404, detail="User not found")
+		raise HTTPException(status_code=404, detail="User not found")
 
 	existing_user.firstname = user_update.firstname
 	existing_user.lastname = user_update.lastname
