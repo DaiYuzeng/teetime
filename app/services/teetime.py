@@ -2,12 +2,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from fastapi import HTTPException
 
-from app.models.teetime import TeeTime, Type
-from app.schemas.teetime import RegularTeeTimeCreate, StandingTeeTimeCreate, RegularTeeTimeUpdate, StandingTeeTimeUpdate
+from app.dependencies.access_control import get_all_or_own
+from app.models.teetime import TeeTime, TeeTimeStatus, Type
+from app.models.user import User
+from app.schemas.teetime import TeeTimeBase, TeeTimeUpdate
 
-def get_teetimes(db: Session, limit: int, offset: int):
-	query = db.query(TeeTime)
-	total_count = db.query(func.count(TeeTime.id)).scalar()
+def get_teetimes(db: Session, current_user, limit: int, offset: int):
+	query = get_all_or_own(
+		model=TeeTime,
+		db=db,
+		current_user=current_user,
+		filter_column='user_id'
+	)
+
+	total_count = query.count()
 	data = query.offset(offset).limit(limit).all()
 	return {
 			"total": total_count,
@@ -30,30 +38,30 @@ def delete_teetime(teetime_id: int, db: Session):
 	db.commit()
 	return {"message": "TeeTime deleted successfully"}
 
-def create_teetime(data: RegularTeeTimeCreate | StandingTeeTimeCreate, db: Session):
+def create_teetime(data: TeeTimeBase, current_user, db: Session):
   if data.type == Type.regular:
-    return _create_regular_teetime(data, db)
+    return _create_regular_teetime(data, current_user, db)
   elif data.type == Type.standing:
-    return _create_standing_teetime(data, db)
+    return _create_standing_teetime(data, current_user, db)
   else:
     raise ValueError(f"Unsupported tee time type: {data.type}")
 
 
-def _create_regular_teetime(data: RegularTeeTimeCreate, db: Session):
+def _create_regular_teetime(data: TeeTimeBase, current_user: User, db: Session):
   new_row = TeeTime(
     type=data.type,
     player_count=data.player_count,
     start_date=data.start_date,
-    user_id=data.user_id
+		status=TeeTimeStatus.pending,
+    user_id=current_user.id
   )
-  
   db.add(new_row)
   db.commit()
   db.refresh(new_row)
 	
   return new_row
 
-def _create_standing_teetime(data: StandingTeeTimeCreate, db: Session):
+def _create_standing_teetime(data: TeeTimeBase, current_user: User, db: Session):
   new_row = TeeTime(
     type=data.type,
     start_date=data.start_date,
@@ -61,7 +69,8 @@ def _create_standing_teetime(data: StandingTeeTimeCreate, db: Session):
     requested_day=data.requested_day,
     requested_time=data.requested_time,
     member_list=data.member_list,
-    user_id=data.user_id
+		status=TeeTimeStatus.pending,
+    user_id=current_user.id
   )
   
   db.add(new_row)
@@ -70,7 +79,7 @@ def _create_standing_teetime(data: StandingTeeTimeCreate, db: Session):
 	
   return new_row
 
-def update_teetime(data: RegularTeeTimeUpdate | StandingTeeTimeUpdate, db: Session):
+def update_teetime(data: TeeTimeUpdate, db: Session):
   if data.type == Type.regular:
     return _update_regular_teetime(data, db)
   elif data.type == Type.standing:
@@ -78,36 +87,32 @@ def update_teetime(data: RegularTeeTimeUpdate | StandingTeeTimeUpdate, db: Sessi
   else:
     raise ValueError(f"Unsupported tee time type: {data.type}")
 
-def _update_regular_teetime(data: RegularTeeTimeUpdate, db: Session):
+
+def _update_regular_teetime(data: TeeTimeUpdate, db: Session):
 	existing_data = db.query(TeeTime).filter(TeeTime.id == data.id).first()
 	if not existing_data:
 		raise HTTPException(status_code=404, detail="TeeTime not found")
 
 	existing_data.status = data.status
-
-	db.commit()
-	db.refresh(existing_data)
-	return existing_data
-
-def _update_regular_teetime(data: StandingTeeTimeUpdate, db: Session):
-	existing_data = db.query(TeeTime).filter(TeeTime.id == data.id).first()
-	if not existing_data:
-		raise HTTPException(status_code=404, detail="TeeTime not found")
-
-	existing_data.status = data.status
+	existing_data.start_date = data.start_date
+	existing_data.player_count = data.player_count
 	
 	db.commit()
 	db.refresh(existing_data)
 	return existing_data
 
 
-
-def _update_standing_teetime(data: StandingTeeTimeUpdate, db: Session):
+def _update_standing_teetime(data: TeeTimeUpdate, db: Session):
 	existing_data = db.query(TeeTime).filter(TeeTime.id == data.id).first()
 	if not existing_data:
 		raise HTTPException(status_code=404, detail="TeeTime not found")
 
 	existing_data.status = data.status
+	existing_data.start_date = data.start_date
+	existing_data.end_date = data.end_date
+	existing_data.requested_day = data.requested_day
+	existing_data.requested_time = data.requested_time
+	existing_data.member_list = data.member_list
   
 	if data.priority:
 		existing_data.priority = data.priority

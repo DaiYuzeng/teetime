@@ -1,71 +1,33 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime, time
-from app.models.teetime import Type, WeekDay, Status
+from app.models.teetime import Type, WeekDay, TeeTimeStatus
 
 
 class TeeTimeBase(BaseModel):
   type: Type
   start_date: datetime
-  status: Optional[Status] = Status.waiting
+  player_count: Optional[int] = None
+  end_date: Optional[datetime] = None
+  requested_day: Optional[WeekDay] = None
+  requested_time:Optional[time] = None
+  member_list:Optional[List[str]] = None
+  priority:Optional[int] = None
 
-class RegularTeeTimeBase(TeeTimeBase):
-  player_count: int
-
-class StandingTeeTimeBase(TeeTimeBase):
-  end_date: datetime
-  requested_day: WeekDay
-  requested_time:time
-  member_list:List[str]
-  priority:Optional[int]
-
-
-class RegularTeeTimeCreate(RegularTeeTimeBase):
-  user_id: int
-
-class StandingTeeTimeCreate(StandingTeeTimeBase):
-  user_id: int
-
-class RegularTeeTimeUpdate(BaseModel):
+class TeeTimeUpdate(TeeTimeBase):
   id: int
-  player_count: int
-  start_date: datetime
-  status: Status
+  status: TeeTimeStatus
 
-class StandingTeeTimeUpdate(BaseModel):
-  start_date: datetime
-  end_date: datetime
-  requested_day: WeekDay
-  requested_time: time
-  member_list: List[str]
-  priority:Optional[int]
-  status: Status
+class TeeTimeResponse(TeeTimeBase):
+  id: int
+  user_id: int
+  status: TeeTimeStatus
 
   model_config = ConfigDict(from_attributes=True)
 
 
-class RegularTeeTimeResponse(RegularTeeTimeBase):
-  id: int
-  user_id: int
-
-  model_config = ConfigDict(from_attributes=True)
-
-
-class StandingTeeTimeResponse(StandingTeeTimeBase):
-  id: int
-  user_id: int
-
-  model_config = ConfigDict(from_attributes=True)
-
-
-class RegularTeeTimePaginatedResponse(BaseModel):
+class TeeTimePaginatedResponse(BaseModel):
   total: int
   limit: int
   offset: int
-  data: List[RegularTeeTimeResponse]
-
-class StandingTeeTimePaginatedResponse(BaseModel):
-  total: int
-  limit: int
-  offset: int
-  data: List[StandingTeeTimeResponse]
+  data: List[TeeTimeResponse]

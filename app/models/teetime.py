@@ -4,8 +4,8 @@ from sqlalchemy.orm import relationship
 import enum
 
 class Type(str, enum.Enum):
-	regular = "regular"
-	standing = "standing"
+	regular = "Regular"
+	standing = "Standing"
 
 class WeekDay(str, enum.Enum):
 	monday = "Monday"
@@ -16,12 +16,10 @@ class WeekDay(str, enum.Enum):
 	saturday = "Saturday"
 	sunday = "Sunday"
 
-class Status(str, enum.Enum):
-	waiting = "Waiting"
-	approve = "Approve"
-	cancel = "Cancel"
-	deny = "Deny"
-	finish = "Finish"
+class TeeTimeStatus(str, enum.Enum):
+	pending = "Pending"
+	approved = "Approved"
+	denied = "Denied"
 
 
 
@@ -37,7 +35,7 @@ class TeeTime(Base):
 	requested_time = Column((Time), nullable=True)
 	member_list = Column(ARRAY(String), nullable=True)
 	priority = Column(SmallInteger, nullable=True)
-	status = Column(Enum(Status), default=Status.waiting)
+	status = Column(Enum(TeeTimeStatus, name="teetimestatus", native_enum=False), default=TeeTimeStatus.pending)
 
 	user_id = Column(Integer, ForeignKey("users.id"))
 	user = relationship("User", back_populates="tee_times")
