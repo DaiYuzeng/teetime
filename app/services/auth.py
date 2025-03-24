@@ -15,10 +15,12 @@ def login_for_access_token(db: Session, form_data: OAuth2PasswordRequestForm):
 
   access_token = create_access_token({"sub": str(user.id)})
   refresh_token = create_refresh_token({"sub": str(user.id)})
+  role = user.role
 
   return {
     "access_token": access_token,
     "refresh_token": refresh_token,
+    "role": role,
     "token_type": "bearer"
   }
 

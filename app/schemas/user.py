@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 from app.models.user import Role
-from typing import List
+from typing import Optional, List
 
 class UserBase(BaseModel):
     username: str
@@ -8,6 +8,8 @@ class UserBase(BaseModel):
     lastname: str
     address: str
     phone: str
+    shareholder1_username: str
+    shareholder2_username: str
     email: str
 
 class UserCreate(UserBase):
@@ -22,7 +24,7 @@ class UserUpdate(UserBase):
 
 class UserResponse(UserBase):
     id: int
-    role: Role
+    role: Optional[Role] = None
 
     model_config = ConfigDict(from_attributes=True)
 

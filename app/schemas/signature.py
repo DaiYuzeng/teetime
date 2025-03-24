@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from enum import Enum
-from typing import Optional
-from models.signature import SignatureStatus
+from typing import Optional, List
+from app.models.signature import SignatureStatus
 
 
 class SignatureCreate(BaseModel):
@@ -18,5 +18,13 @@ class SignatureUpdate(BaseModel):
 
 class SignatureResponse(SignatureCreate):
   id: int
+  candidate_username: str
+  shareholder_username: Optional[str] = None
 
   model_config = ConfigDict(from_attributes=True)
+
+class SignaturePaginatedResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    data: List[SignatureResponse]

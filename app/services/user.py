@@ -3,7 +3,9 @@ from sqlalchemy import func
 from fastapi import HTTPException
 
 from app.models.user import User, Role
+from app.schemas.signature import SignatureCreate
 from app.schemas.user import UserCreate, UserUpdate
+from app.services.signature import create_signature
 
 def get_users(db: Session, limit: int, offset: int):
 	query = db.query(User)
@@ -39,12 +41,26 @@ def register_user(user: UserCreate, db: Session):
 		firstname = user.firstname,
 		lastname = user.lastname,
 		address = user.address,
-		username=user.username,
-		phone=user.phone,
-		email=user.email,
-		hashed_password=user.hashed_password
+		username = user.username,
+		shareholder1_username = user.shareholder1_username,
+		shareholder2_username = user.shareholder2_username,
+		phone = user.phone,
+		email = user.email,
+		hashed_password = user.hashed_password
 	)
+	
 	db.add(new_user)
+	db.flush()
+
+	shareholder1 = db.query(User).filter_by(username=user.shareholder1_username).first()
+	shareholder2 = db.query(User).filter_by(username=user.shareholder2_username).first()
+
+	if not shareholder1 or not shareholder2:
+		raise HTTPException(status_code=400, detail="Invalid shareholder usernames")
+	
+	create_signature(SignatureCreate(candidate_user_id=new_user.id, shareholder_user_id=shareholder1.id), db)
+	create_signature(SignatureCreate(candidate_user_id=new_user.id, shareholder_user_id=shareholder2.id), db)
+
 	db.commit()
 	db.refresh(new_user)
 	return new_user
