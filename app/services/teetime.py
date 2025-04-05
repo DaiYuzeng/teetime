@@ -4,13 +4,14 @@ from fastapi import HTTPException
 
 from app.dependencies.access_control import get_all_or_own
 from app.models.teetime import TeeTime, TeeTimeStatus, Type
-from app.models.user import User
+from app.models.user import User, Role
 from app.schemas.teetime import TeeTimeBase, TeeTimeUpdate
 
 def get_teetimes(db: Session, current_user, limit: int, offset: int):
 	query = get_all_or_own(
 		model=TeeTime,
 		db=db,
+		roles=[Role.admin, Role.staff],
 		current_user=current_user,
 		filter_column='user_id'
 	)
@@ -62,7 +63,12 @@ def _create_regular_teetime(data: TeeTimeBase, current_user: User, db: Session):
   return new_row
 
 def _create_standing_teetime(data: TeeTimeBase, current_user: User, db: Session):
-  new_row = TeeTime(
+	for username in data.member_list:
+		user = db.query(User).filter(User.username == username).first()
+		if not user:
+			raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+	
+	new_row = TeeTime(
     type=data.type,
     start_date=data.start_date,
     end_date=data.end_date,
@@ -73,11 +79,11 @@ def _create_standing_teetime(data: TeeTimeBase, current_user: User, db: Session)
     user_id=current_user.id
   )
   
-  db.add(new_row)
-  db.commit()
-  db.refresh(new_row)
+	db.add(new_row)
+	db.commit()
+	db.refresh(new_row)
 	
-  return new_row
+	return new_row
 
 def update_teetime(data: TeeTimeUpdate, db: Session):
   if data.type == Type.regular:
@@ -106,6 +112,11 @@ def _update_standing_teetime(data: TeeTimeUpdate, db: Session):
 	existing_data = db.query(TeeTime).filter(TeeTime.id == data.id).first()
 	if not existing_data:
 		raise HTTPException(status_code=404, detail="TeeTime not found")
+
+	for username in data.member_list:
+		user = db.query(User).filter(User.username == username).first()
+		if not user:
+			raise HTTPException(status_code=404, detail=f"User '{username}' not found")
 
 	existing_data.status = data.status
 	existing_data.start_date = data.start_date

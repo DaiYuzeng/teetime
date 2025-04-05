@@ -20,6 +20,7 @@ class TeeTimeStatus(str, enum.Enum):
 	pending = "Pending"
 	approved = "Approved"
 	denied = "Denied"
+	canceled = "Canceled"
 
 
 
