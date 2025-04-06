@@ -9,7 +9,7 @@ app = FastAPI()
 # Allow requests from the frontend
 origins = [
     "http://localhost:3000",  # Next.js local development
-    "https://your-production-domain.com",  # Add production URL when deploying
+    "https://dev1.baist.ca",  # Add production URL when deploying
 ]
 
 app.add_middleware(
